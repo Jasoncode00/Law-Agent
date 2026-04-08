@@ -1,0 +1,346 @@
+@import "tailwindcss";
+
+/* ============================================================
+   디자인 토큰 - 여기서 색상/폰트/간격을 수정하세요
+   ============================================================ */
+:root {
+  /* 브랜드 색상 */
+  --color-primary: #1e40af;
+  /* 메인 파란색 */
+  --color-primary-hover: #1d4ed8;
+  --color-primary-light: #dbeafe;
+
+  /* 페르소나 색상 */
+  --color-general: #4f46e5;
+  --color-dev-sales: #15803d;
+  /* 개발/영업 - 초록색 계열 */
+  --color-design: #0369a1;
+  /* 설계/인허가 - 파란색 계열 */
+  --color-construction: #b45309;
+  /* 시공/안전 - 주황색 계열 */
+  --color-contract: #a16207;
+  /* 계약/원가 - 호박색 계열 */
+  --color-quality: #7c3aed;
+  /* 품질관리 - 보라색 계열 */
+
+  /* 배경 */
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-border: #e2e8f0;
+
+  /* 텍스트 */
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #64748b;
+  --color-text-muted: #94a3b8;
+
+  /* 채팅 말풍선 */
+  --color-bubble-user: #1e40af;
+  --color-bubble-user-text: #ffffff;
+  --color-bubble-assistant: #ffffff;
+  --color-bubble-assistant-text: #0f172a;
+
+  /* 도구 호출 배지 */
+  --color-tool-bg: #f0f9ff;
+  --color-tool-border: #bae6fd;
+  --color-tool-text: #0369a1;
+
+  /* 간격/크기 */
+  --chat-max-width: 900px;
+  --sidebar-width: 260px;
+  --border-radius: 0.75rem;
+
+  /* 폰트 */
+  --font-sans: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+}
+
+/* 마크다운 스타일 (assistant 답변용) */
+.prose-law h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 1rem 0 0.5rem;
+}
+
+.prose-law h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0.75rem 0 0.4rem;
+}
+
+.prose-law h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0.6rem 0 0.3rem;
+  color: var(--color-text-secondary);
+}
+
+.prose-law p {
+  margin: 0.4rem 0;
+  line-height: 1.75;
+}
+
+.prose-law ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+  margin: 0.4rem 0;
+}
+
+.prose-law ol {
+  list-style: decimal;
+  padding-left: 1.25rem;
+  margin: 0.4rem 0;
+}
+
+.prose-law li {
+  margin: 0.2rem 0;
+  line-height: 1.7;
+}
+
+/* 클릭 가능한 리스트 항목 */
+.prose-law li.clickable-li {
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 0.1rem 0.3rem;
+  margin-left: -0.3rem;
+  transition: background 0.15s;
+}
+
+.prose-law li.clickable-li:hover {
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  color: var(--color-primary);
+}
+
+.prose-law strong {
+  font-weight: 700;
+}
+
+.prose-law hr {
+  border-color: var(--color-border);
+  margin: 0.75rem 0;
+}
+
+.prose-law code {
+  background: #f1f5f9;
+  border-radius: 4px;
+  padding: 0.1em 0.4em;
+  font-size: 0.875em;
+}
+
+.prose-law table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.5rem 0;
+  font-size: 0.875rem;
+}
+
+.prose-law th,
+.prose-law td {
+  border: 1px solid var(--color-border);
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+}
+
+.prose-law th {
+  background: #f8fafc;
+  font-weight: 600;
+}
+
+/* 사용자 메시지 버블 — 텍스트 드래그/복사 허용 */
+.bubble-user-selectable,
+.bubble-user-selectable * {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  cursor: text !important;
+  pointer-events: auto !important;
+}
+
+/* 파란 배경에서 selection이 보이도록 흰색 반투명 하이라이트 */
+.bubble-user-selectable::selection,
+.bubble-user-selectable *::selection {
+  background: rgba(255, 255, 255, 0.35) !important;
+  color: #ffffff !important;
+}
+
+/* Perplexity 스타일 인용 번호 */
+.cite-num {
+  display: inline;
+  font-size: 0.65rem;
+  font-weight: 700;
+  font-style: normal;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  border-radius: 3px;
+  padding: 0 3px;
+  margin-left: 1px;
+  cursor: pointer;
+  vertical-align: super;
+  line-height: 1;
+  transition: background 0.15s;
+  user-select: none;
+}
+
+.cite-num:hover {
+  background: #bfdbfe;
+}
+
+/* 법령 원문 포맷 (LawViewer) — 본문 답변과 동일 크기 (text-sm = 0.875rem) */
+.law-content {
+  color: var(--color-text-primary);
+  line-height: 1.75;
+  font-size: 0.875rem;
+}
+
+.law-line {
+  margin: 0.15rem 0;
+}
+
+.law-gap {
+  height: 0.6rem;
+}
+
+.law-item-circle {
+  padding-left: 0.75rem;
+  margin: 0.25rem 0;
+  position: relative;
+}
+
+.law-item-num {
+  padding-left: 1.25rem;
+  margin: 0.2rem 0;
+}
+
+.law-item-ko {
+  padding-left: 1.75rem;
+  margin: 0.2rem 0;
+}
+
+/* 홈 페이지 특징 배지 */
+.home-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+/* ============================================================
+   카드형 페르소나 선택기 (Card Persona Selector)
+   ============================================================ */
+.persona-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.875rem;
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.persona-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 1.125rem;
+  border-radius: var(--border-radius);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  min-height: 140px;
+}
+
+.persona-card:hover {
+  border-color: var(--node-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.persona-card--selected {
+  border-color: var(--node-color);
+  background: color-mix(in srgb, var(--node-color) 5%, transparent);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--node-color) 15%, transparent);
+}
+
+.persona-card-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--node-gradient);
+  color: #fff;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--node-color) 25%, transparent);
+}
+
+.persona-card-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.persona-card-desc {
+  font-size: 0.725rem;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+  word-break: keep-all;
+}
+
+/* ── 반응형: 작은 화면 ── */
+@media (max-width: 768px) {
+  .persona-card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .persona-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 축소 사이드바 아이콘 버튼 */
+.sidebar-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  transition: background 0.15s, color 0.15s;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.sidebar-icon-btn:hover {
+  background: #f1f5f9;
+  color: var(--color-text-primary);
+}
+
+/* 스크롤바 */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
