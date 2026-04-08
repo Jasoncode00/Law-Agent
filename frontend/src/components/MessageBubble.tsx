@@ -147,6 +147,28 @@ function escapeHtml(s: string): string {
     .replace(/'/g, '&#39;');
 }
 
+/**
+ * "### 추가 질문" 섹션을 본문에서 분리한다.
+ * - mainText: 추가 질문 헤딩 이전의 본문 (renderMarkdown에 전달)
+ * - followups: 추가 질문 bullet 항목 문자열 배열 (별도 UI로 렌더링)
+ */
+function extractFollowups(text: string): { mainText: string; followups: string[] } {
+  const headingMatch = /^#{1,4}\s*추가\s*질문\s*$/m.exec(text);
+  if (!headingMatch) return { mainText: text, followups: [] };
+
+  const mainText = text.slice(0, headingMatch.index).trimEnd();
+  const afterHeading = text.slice(headingMatch.index + headingMatch[0].length);
+
+  const followups: string[] = [];
+  for (const line of afterHeading.split('\n')) {
+    const m = line.match(/^[-•]\s+(.+)/);
+    if (m) followups.push(m[1].trim());
+    else if (/^#{1,4}\s/.test(line)) break; // 다음 헤딩에서 중단
+  }
+
+  return { mainText, followups };
+}
+
 /** 마크다운 → HTML (인용 <cite> 태그 보존) */
 function renderMarkdown(raw: string): string {
   // cite 태그를 플레이스홀더로 대피시킨 뒤 이스케이프, 마지막에 복원
@@ -164,7 +186,7 @@ function renderMarkdown(raw: string): string {
     .replace(/^## (.+)$/gm, '<h2>$1</h2>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/^[-•] (.+)$/gm, '<li>$1</li>')
-    .replace(/(<li>.*<\/li>\n?)+/g, (m) => `<ul>${m}</ul>`)
+    .replace(/(<li(?:[^>]*)>.*<\/li>\n?)+/g, (m) => `<ul>${m}</ul>`)
     .replace(/^---+$/gm, '<hr>')
     .replace(/\n{2,}/g, '</p><p>')
     .replace(/^(?!<[hul\/])(.+)$/gm, '<p>$1</p>')
@@ -184,14 +206,15 @@ export default function MessageBubble({ entry, onViewArticle, onSend }: Props) {
     return entry.toolResults.flatMap((tr) => parseLawSources(tr.name, tr.result));
   }, [entry.toolResults]);
 
-  /* 인용 번호 삽입 + HTML 렌더링 */
-  const { finalHtml, citations } = useMemo(() => {
+  /* 추가 질문 분리 + 인용 번호 삽입 + HTML 렌더링 */
+  const { finalHtml, citations, followups } = useMemo(() => {
     const cleaned = cleanContent(entry.content);
-    if (!cleaned) return { finalHtml: '', citations: [] };
+    if (!cleaned) return { finalHtml: '', citations: [], followups: [] };
 
-    const { markedText, citations } = buildCitations(cleaned, lawSources);
+    const { mainText, followups } = extractFollowups(cleaned);
+    const { markedText, citations } = buildCitations(mainText, lawSources);
     const finalHtml = renderMarkdown(markedText);
-    return { finalHtml, citations };
+    return { finalHtml, citations, followups };
   }, [entry.content, lawSources]);
 
   // citationsRef 최신 유지
@@ -199,54 +222,24 @@ export default function MessageBubble({ entry, onViewArticle, onSend }: Props) {
     citationsRef.current = citations;
   }, [citations]);
 
-  /* cite-num 클릭 핸들러 */
+  /* cite-num 클릭 핸들러 — 컨테이너 이벤트 위임 */
   useEffect(() => {
     const container = contentRef.current;
     if (!container) return;
 
-    const cites = container.querySelectorAll<HTMLElement>('.cite-num');
-    const cleanups: Array<() => void> = [];
+    const handler = (e: MouseEvent) => {
+      const cite = (e.target as HTMLElement).closest<HTMLElement>('.cite-num');
+      if (!cite) return;
+      const n = Number(cite.dataset.n);
+      const entry = citationsRef.current.find((c) => c.num === n);
+      if (!entry) return;
+      onViewArticle(entry.lawName, entry.articleId);
+    };
 
-    cites.forEach((el) => {
-      const n = Number(el.dataset.n);
-      const handler = () => {
-        const entry = citationsRef.current.find((c) => c.num === n);
-        if (!entry) return;
-        onViewArticle(entry.lawName, entry.articleId);
-      };
-      el.addEventListener('click', handler);
-      cleanups.push(() => el.removeEventListener('click', handler));
-    });
-
-    return () => cleanups.forEach((fn) => fn());
+    container.addEventListener('click', handler);
+    return () => container.removeEventListener('click', handler);
   }, [finalHtml, onViewArticle]);
 
-  /* li 클릭 → 해당 텍스트를 새 질의로 전송 */
-  useEffect(() => {
-    if (!onSend) return;
-    const container = contentRef.current;
-    if (!container) return;
-
-    const items = container.querySelectorAll<HTMLLIElement>('li');
-    const cleanups: Array<() => void> = [];
-
-    items.forEach((li) => {
-      li.classList.add('clickable-li');
-      const handler = (e: MouseEvent) => {
-        // cite 클릭은 무시
-        if ((e.target as HTMLElement).closest('.cite-num')) return;
-        const text = li.textContent?.replace(/\[\d+\]/g, '').trim();
-        if (text) onSend(text);
-      };
-      li.addEventListener('click', handler);
-      cleanups.push(() => {
-        li.classList.remove('clickable-li');
-        li.removeEventListener('click', handler);
-      });
-    });
-
-    return () => cleanups.forEach((fn) => fn());
-  }, [finalHtml, onSend]);
 
   /* 사용자 메시지 */
   if (isUser) {
@@ -310,6 +303,31 @@ export default function MessageBubble({ entry, onViewArticle, onSend }: Props) {
             />
           )}
         </div>
+
+        {/* 추가 질문 카드 (스트리밍 완료 후, 추가 질문이 있을 때만) */}
+        {!entry.isStreaming && followups.length > 0 && (
+          <div
+            className="mt-2 rounded-xl border px-3 py-2"
+            style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)' }}
+          >
+            <p className="text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
+              추가 질문
+            </p>
+            <div className="flex flex-col gap-0.5">
+              {followups.map((q, i) => (
+                <button
+                  key={i}
+                  onClick={() => onSend?.(q)}
+                  className="flex items-start gap-2 w-full text-left text-xs rounded-md px-2 py-1.5 transition-colors hover:bg-blue-50"
+                  style={{ color: 'var(--color-text-secondary)' }}
+                >
+                  <span className="shrink-0 font-bold" style={{ color: 'var(--color-primary)' }}>›</span>
+                  <span>{q}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* 인용 목록 (스트리밍 완료 후, 인용이 있을 때만) */}
         {!entry.isStreaming && citations.length > 0 && (

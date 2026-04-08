@@ -25,6 +25,12 @@ export function useChat(persona: PersonaId, options?: UseChatOptions) {
   const personaRef = useRef(persona);
   personaRef.current = persona;
 
+  // sendMessage 클로저가 stale entries/isLoading을 참조하지 않도록 ref로 최신 값 유지
+  const entriesRef = useRef(entries);
+  entriesRef.current = entries;
+  const isLoadingRef = useRef(isLoading);
+  isLoadingRef.current = isLoading;
+
   // entries 변경 시 외부 콜백 호출 (세션 저장용)
   const onEntriesChangeRef = useRef(options?.onEntriesChange);
   onEntriesChangeRef.current = options?.onEntriesChange;
@@ -40,9 +46,9 @@ export function useChat(persona: PersonaId, options?: UseChatOptions) {
   }, [entries]);
 
   const sendMessage = useCallback((message: string) => {
-    if (!message.trim() || isLoading) return;
+    if (!message.trim() || isLoadingRef.current) return;
 
-    const history: ChatMessage[] = entries.map((e) => ({
+    const history: ChatMessage[] = entriesRef.current.map((e) => ({
       role: e.role,
       content: e.content,
     }));
@@ -121,7 +127,7 @@ export function useChat(persona: PersonaId, options?: UseChatOptions) {
         setIsLoading(false);
       },
     });
-  }, [entries, isLoading]);
+  }, []);
 
   const stopStreaming = useCallback(() => {
     abortRef.current?.abort();
