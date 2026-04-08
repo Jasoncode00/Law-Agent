@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useMemo } from 'react';
-import { AlertCircle } from 'lucide-react';
+import { useEffect, useRef, useMemo, useState } from 'react';
+import { AlertCircle, Copy, Check, RotateCcw } from 'lucide-react';
 import { ChatEntry } from '@/hooks/useChat';
 import { LawSource } from '@/lib/types';
 import { parseLawSources, TEXT_TOOL_PRIORITY } from '@/lib/lawParser';
@@ -13,6 +13,8 @@ interface Props {
   onViewArticle: (lawName: string, articleId: string) => void;
   /** 리스트 항목 클릭 시 해당 텍스트를 새 질의로 전송 */
   onSend?: (text: string) => void;
+  /** 직전 사용자 질문을 다시 실행 */
+  onRetry?: () => void;
 }
 
 interface CitationEntry {
@@ -228,8 +230,8 @@ function renderMarkdown(raw: string): string {
     // 최상위 불릿 목록
     const bul = line.match(/^[-•]\s+(.+)$/);
     if (bul) {
-      if (stack.length > 0 && stack[stack.length - 1] === 'ol') closeListTo(0);
       if (stack.length > 1) closeListTo(1);
+      if (stack.length === 1 && stack[0] === 'ol') { closeListTo(0); openList('ul'); }
       if (stack.length === 0) openList('ul');
       nodes.push(`<li>${inline(bul[1])}</li>`);
       continue;
@@ -248,14 +250,20 @@ function renderMarkdown(raw: string): string {
     // 최상위 번호 목록
     const num = line.match(/^\d+[.)]\s+(.+)$/);
     if (num) {
-      if (stack.length > 0 && stack[stack.length - 1] === 'ul') closeListTo(0);
       if (stack.length > 1) closeListTo(1);
+      if (stack.length === 1 && stack[0] === 'ul') { closeListTo(0); openList('ol'); }
       if (stack.length === 0) openList('ol');
       nodes.push(`<li>${inline(num[1])}</li>`);
       continue;
     }
 
-    // 일반 텍스트 / 빈 줄
+    // 빈 줄 — 목록을 닫지 않고 단락 경계 표시만
+    if (line.trim() === '') {
+      nodes.push('');
+      continue;
+    }
+
+    // 일반 텍스트
     closeListTo(0);
     nodes.push(inline(line));
   }
@@ -291,10 +299,11 @@ function renderMarkdown(raw: string): string {
   return html.replace(/\x00CITE(\d+)\x00/g, (_, i) => cites[Number(i)]);
 }
 
-export default function MessageBubble({ entry, onViewArticle, onSend }: Props) {
+export default function MessageBubble({ entry, onViewArticle, onSend, onRetry }: Props) {
   const isUser = entry.role === 'user';
   const contentRef = useRef<HTMLDivElement>(null);
   const citationsRef = useRef<CitationEntry[]>([]);
+  const [copied, setCopied] = useState(false);
 
   /* tool_results → LawSource (법령별 분리, 복수 반환) */
   const lawSources = useMemo<LawSource[]>(() => {
@@ -399,6 +408,37 @@ export default function MessageBubble({ entry, onViewArticle, onSend }: Props) {
             />
           )}
         </div>
+
+        {/* 복사 / 재시도 버튼 (스트리밍 완료 후) */}
+        {!entry.isStreaming && finalHtml && (
+          <div className="flex items-center gap-1 mt-1 ml-1">
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(cleanContent(entry.content)).then(() => {
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                });
+              }}
+              className="flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors hover:bg-gray-100"
+              style={{ color: 'var(--color-text-muted)' }}
+              title="답변 복사"
+            >
+              {copied ? <Check size={13} /> : <Copy size={13} />}
+              <span>{copied ? '복사됨' : '복사'}</span>
+            </button>
+            {onRetry && (
+              <button
+                onClick={onRetry}
+                className="flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors hover:bg-gray-100"
+                style={{ color: 'var(--color-text-muted)' }}
+                title="다시 시도"
+              >
+                <RotateCcw size={13} />
+                <span>재시도</span>
+              </button>
+            )}
+          </div>
+        )}
 
         {/* 추가 질문 카드 (스트리밍 완료 후, 추가 질문이 있을 때만) */}
         {!entry.isStreaming && followups.length > 0 && (

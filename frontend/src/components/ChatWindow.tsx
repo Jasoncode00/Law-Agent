@@ -35,9 +35,20 @@ export default function ChatWindow({ entries, onViewArticle, onSend }: Props) {
       className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 py-4"
       style={{ userSelect: 'text', WebkitUserSelect: 'text' } as React.CSSProperties}
     >
-      {entries.map((entry, i) => (
-        <MessageBubble key={i} entry={entry} onViewArticle={onViewArticle} onSend={onSend} />
-      ))}
+      {entries.map((entry, i) => {
+        const prevUserMsg = entry.role === 'assistant'
+          ? entries.slice(0, i).reverse().find((e) => e.role === 'user')?.content
+          : undefined;
+        return (
+          <MessageBubble
+            key={i}
+            entry={entry}
+            onViewArticle={onViewArticle}
+            onSend={onSend}
+            onRetry={prevUserMsg ? () => onSend?.(prevUserMsg) : undefined}
+          />
+        );
+      })}
       <div ref={bottomRef} />
     </div>
   );
