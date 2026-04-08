@@ -169,9 +169,15 @@ function extractFollowups(text: string): { mainText: string; followups: string[]
   return { mainText, followups };
 }
 
-/** 마크다운 → HTML (인용 <cite> 태그 보존) */
+/** 마크다운 → HTML (인용 <cite> 태그 보존)
+ *
+ * 지원 문법:
+ *   ##/###/#### 헤딩  |  **굵게**  |  --- 구분선
+ *   - / • 불릿 (2칸 들여쓰기 → 중첩 <ul>)
+ *   1. / 1) 번호 목록 (2칸 들여쓰기 → 중첩 <ol>)
+ */
 function renderMarkdown(raw: string): string {
-  // cite 태그를 플레이스홀더로 대피시킨 뒤 이스케이프, 마지막에 복원
+  // <cite> 태그를 플레이스홀더로 대피 후 복원
   const cites: string[] = [];
   const withoutCites = raw.replace(/<cite[^>]*>.*?<\/cite>/g, (m) => {
     cites.push(m);
@@ -180,18 +186,108 @@ function renderMarkdown(raw: string): string {
 
   const escaped = escapeHtml(withoutCites);
 
-  const html = escaped
-    .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/^[-•] (.+)$/gm, '<li>$1</li>')
-    .replace(/(<li(?:[^>]*)>.*<\/li>\n?)+/g, (m) => `<ul>${m}</ul>`)
-    .replace(/^---+$/gm, '<hr>')
-    .replace(/\n{2,}/g, '</p><p>')
-    .replace(/^(?!<[hul\/])(.+)$/gm, '<p>$1</p>')
-    .replace(/<p><\/p>/g, '');
+  // 인라인 포맷 (볼드)
+  const inline = (s: string) => s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 
+  // ── 라인별 블록 구조 변환 ──────────────────────────────────────────
+  const lines = escaped.split('\n');
+  const nodes: string[] = [];
+  const stack: Array<'ul' | 'ol'> = []; // 열려 있는 목록 태그 스택
+
+  const openList = (tag: 'ul' | 'ol') => { nodes.push(`<${tag}>`); stack.push(tag); };
+  const closeListTo = (depth: number) => {
+    while (stack.length > depth) nodes.push(`</${stack.pop()!}>`);
+  };
+
+  for (const line of lines) {
+    // 헤딩 (##, ###, ####)
+    const hm = line.match(/^(#{2,4})\s+(.+)$/);
+    if (hm) {
+      closeListTo(0);
+      nodes.push(`<h${hm[1].length}>${inline(hm[2])}</h${hm[1].length}>`);
+      continue;
+    }
+
+    // 구분선 (---, ━━━, ===)
+    if (/^[-━=]{3,}$/.test(line.trim())) {
+      closeListTo(0);
+      nodes.push('<hr>');
+      continue;
+    }
+
+    // 들여쓰기 불릿 서브항목 (2칸 이상)
+    const subBul = line.match(/^[ \t]{2,}[-•]\s+(.+)$/);
+    if (subBul) {
+      if (stack.length === 0) openList('ul');
+      if (stack.length < 2) openList('ul');
+      else if (stack.length > 2) closeListTo(2);
+      nodes.push(`<li>${inline(subBul[1])}</li>`);
+      continue;
+    }
+
+    // 최상위 불릿 목록
+    const bul = line.match(/^[-•]\s+(.+)$/);
+    if (bul) {
+      if (stack.length > 0 && stack[stack.length - 1] === 'ol') closeListTo(0);
+      if (stack.length > 1) closeListTo(1);
+      if (stack.length === 0) openList('ul');
+      nodes.push(`<li>${inline(bul[1])}</li>`);
+      continue;
+    }
+
+    // 들여쓰기 번호 서브항목 (2칸 이상)
+    const subNum = line.match(/^[ \t]{2,}\d+[.)]\s+(.+)$/);
+    if (subNum) {
+      if (stack.length === 0) openList('ol');
+      if (stack.length < 2) openList('ol');
+      else if (stack.length > 2) closeListTo(2);
+      nodes.push(`<li>${inline(subNum[1])}</li>`);
+      continue;
+    }
+
+    // 최상위 번호 목록
+    const num = line.match(/^\d+[.)]\s+(.+)$/);
+    if (num) {
+      if (stack.length > 0 && stack[stack.length - 1] === 'ul') closeListTo(0);
+      if (stack.length > 1) closeListTo(1);
+      if (stack.length === 0) openList('ol');
+      nodes.push(`<li>${inline(num[1])}</li>`);
+      continue;
+    }
+
+    // 일반 텍스트 / 빈 줄
+    closeListTo(0);
+    nodes.push(inline(line));
+  }
+
+  closeListTo(0);
+
+  // ── 텍스트 라인 → <p> 그룹화 ────────────────────────────────────────
+  // 블록 태그(헤딩·목록·hr)는 그대로, 텍스트 라인은 빈 줄 기준으로 <p>로 묶음
+  const BLOCK_TAG_RE = /^<\/?(?:h[2-4]|ul|ol|li|hr)/;
+  const blocks: string[] = [];
+  let pLines: string[] = [];
+
+  const flushP = () => {
+    if (pLines.length) {
+      blocks.push(`<p>${pLines.join(' ')}</p>`);
+      pLines = [];
+    }
+  };
+
+  for (const node of nodes) {
+    if (BLOCK_TAG_RE.test(node)) {
+      flushP();
+      blocks.push(node);
+    } else if (node.trim() === '') {
+      flushP();
+    } else {
+      pLines.push(node);
+    }
+  }
+  flushP();
+
+  const html = blocks.join('\n');
   return html.replace(/\x00CITE(\d+)\x00/g, (_, i) => cites[Number(i)]);
 }
 
