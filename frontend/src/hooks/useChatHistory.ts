@@ -107,6 +107,17 @@ export function useChatHistory() {
     [sessions]
   );
 
+  /** 세션 페르소나 변경 */
+  const updateSessionPersona = useCallback((sessionId: string, persona: PersonaId) => {
+    setSessions((prev) => {
+      const next = prev.map((s) =>
+        s.id === sessionId ? { ...s, persona } : s
+      );
+      saveSessions(next);
+      return next;
+    });
+  }, []);
+
   /** 전체 대화 삭제 */
   const clearAll = useCallback(() => {
     setSessions([]);
@@ -117,6 +128,7 @@ export function useChatHistory() {
     sessions,
     createSession,
     updateSession,
+    updateSessionPersona,
     deleteSession,
     toggleBookmark,
     getSession,

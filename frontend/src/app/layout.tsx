@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Law Navigator',
-  description: '법령 자문 AI Agent',
+  title: 'LexAI',
+  description: '정확한 법령 근거, 빠른 현장 판단',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

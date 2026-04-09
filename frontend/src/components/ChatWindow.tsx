@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { ChatEntry } from '@/hooks/useChat';
 import MessageBubble from './MessageBubble';
-import { Compass } from 'lucide-react';
+import { Scale } from 'lucide-react';
 
 interface Props {
   entries: ChatEntry[];
@@ -24,7 +24,7 @@ export default function ChatWindow({ entries, onViewArticle, onSend }: Props) {
         className="flex flex-1 flex-col items-center justify-center gap-3"
         style={{ color: 'var(--color-text-muted)' }}
       >
-        <Compass size={40} strokeWidth={1.2} />
+        <Scale size={40} strokeWidth={1.2} />
         <p className="text-sm">법령에 대해 궁금한 것을 질문하세요.</p>
       </div>
     );

@@ -43,15 +43,15 @@ export default function ChatInput({ onSend, onStop, isLoading, disabled }: Props
   };
 
   return (
-    <div className="border-t px-4 py-3" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}>
-      {/* 빠른 질문 버튼 */}
+    <div className="px-4 pb-3 pt-2">
+      {/* 빠른 질문 버튼 — 크림 배경 위에 그냥 배치 */}
       {!isLoading && (
         <div className="mb-2 flex flex-wrap gap-1.5">
           {QUICK_QUESTIONS.map((q) => (
             <button
               key={q}
               onClick={() => { onSend(q); }}
-              className="rounded-full border px-3 py-1 text-xs transition-colors hover:bg-[#e8eef5]"
+              className="rounded-full border px-3 py-1 text-xs transition-colors hover:bg-[#ede9e1]"
               style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-secondary)' }}
             >
               {q}
@@ -60,10 +60,14 @@ export default function ChatInput({ onSend, onStop, isLoading, disabled }: Props
         </div>
       )}
 
-      {/* 입력창 */}
+      {/* 입력창 — 흰색으로 배경에서 구분 */}
       <div
         className="flex items-center gap-2 rounded-2xl border px-3 py-2"
-        style={{ borderColor: 'var(--color-border)', background: '#f8fafc' }}
+        style={{
+          borderColor: 'var(--color-border)',
+          background: '#ffffff',
+          boxShadow: '0 1px 6px rgba(0,0,0,0.07)',
+        }}
       >
         <textarea
           ref={textareaRef}
@@ -73,9 +77,9 @@ export default function ChatInput({ onSend, onStop, isLoading, disabled }: Props
           onInput={handleInput}
           disabled={disabled || isLoading}
           placeholder="법령 관련 질문을 입력하세요... (Shift+Enter: 줄바꿈)"
-          rows={1}
+          rows={4}
           className="flex-1 resize-none bg-transparent text-sm outline-none"
-          style={{ color: 'var(--color-text-primary)', maxHeight: '160px' }}
+          style={{ color: 'var(--color-text-primary)', maxHeight: '320px' }}
         />
         {isLoading ? (
           <button
@@ -101,7 +105,9 @@ export default function ChatInput({ onSend, onStop, isLoading, disabled }: Props
           </button>
         )}
       </div>
-      <p className="mt-1 text-center text-xs" style={{ color: 'var(--color-text-muted)' }}>
+
+      {/* 면책 문구 — 크림 배경 위에 그냥 배치 */}
+      <p className="mt-1.5 text-center text-xs" style={{ color: 'var(--color-text-muted)' }}>
         AI 답변은 참고용입니다. 중요한 사항은 관련 법령 원문을 확인하세요.
       </p>
     </div>

@@ -41,6 +41,7 @@ function ChatPageInner() {
     sessions,
     createSession,
     updateSession,
+    updateSessionPersona,
     deleteSession,
     toggleBookmark,
     getSession,
@@ -92,12 +93,15 @@ function ChatPageInner() {
 
   /** 새 대화 */
   const handleNewChat = useCallback(() => {
+    // 현재 세션이 비어 있으면 새 세션 생성 불필요
+    const current = activeSessionId ? getSession(activeSessionId) : null;
+    if (current && current.entries.length === 0) return;
     const id = createSession(persona);
     setActiveSessionId(id);
     clearChat();
     setViewer(null);
     setViewerLoading(false);
-  }, [persona, createSession, clearChat]);
+  }, [persona, activeSessionId, getSession, createSession, clearChat]);
 
   /** 세션 선택 */
   const handleSelectSession = useCallback(
@@ -140,15 +144,21 @@ function ChatPageInner() {
   /** 페르소나 전환 */
   const handleChangePersona = useCallback(
     (newPersona: PersonaId) => {
+      if (newPersona === persona) return;
       setPersona(newPersona);
-      const id = createSession(newPersona);
-      setActiveSessionId(id);
-      clearChat();
       setViewer(null);
-      // URL 동기화
+      // 현재 세션이 비어 있으면 페르소나만 변경, 새 세션 생성 안 함
+      const current = activeSessionId ? getSession(activeSessionId) : null;
+      if (current && current.entries.length === 0) {
+        updateSessionPersona(activeSessionId!, newPersona);
+      } else {
+        const id = createSession(newPersona);
+        setActiveSessionId(id);
+        clearChat();
+      }
       router.replace(`/chat?persona=${newPersona}`);
     },
-    [createSession, clearChat, router]
+    [persona, activeSessionId, getSession, updateSessionPersona, createSession, clearChat, router]
   );
 
   return (

@@ -22,7 +22,7 @@ export default function PersonaSelector({ personas, selected, onSelect }: Props)
   const personaMap = Object.fromEntries(personas.map((p) => [p.id, p]));
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3" style={{ maxWidth: '720px', margin: '0 auto' }}>
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
       {PERSONA_ORDER.map((pid) => {
         const p = personaMap[pid];
         const meta = PERSONA_ICONS[pid];
@@ -33,52 +33,78 @@ export default function PersonaSelector({ personas, selected, onSelect }: Props)
           <button
             key={pid}
             onClick={() => onSelect(pid)}
-            className="relative flex flex-col items-start gap-3 rounded-2xl border-2 p-4 text-left transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+            className="group relative flex flex-col rounded-2xl text-left transition-all duration-200 overflow-hidden"
             style={{
-              minHeight: '140px',
-              borderColor: isSelected ? meta.colorVar : 'var(--color-border)',
-              background: isSelected
-                ? `color-mix(in srgb, ${meta.colorVar} 6%, white)`
-                : 'var(--color-surface)',
+              background: '#ffffff',
               boxShadow: isSelected
-                ? `0 0 0 3px color-mix(in srgb, ${meta.colorVar} 15%, transparent)`
-                : undefined,
+                ? `0 0 0 2px ${meta.colorVar}, 0 6px 20px rgba(0,0,0,0.10)`
+                : '0 1px 4px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)',
+              transform: isSelected ? 'translateY(-3px)' : undefined,
+            }}
+            onMouseEnter={(e) => {
+              if (!isSelected) {
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)';
+                e.currentTarget.style.transform = 'translateY(-3px)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isSelected) {
+                e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)';
+                e.currentTarget.style.transform = '';
+              }
             }}
           >
-            {/* 아이콘 + 이름 (가로 배치) */}
-            <div className="flex items-center gap-2.5">
+            {/* 상단 액센트 바 */}
+            <div
+              className="h-1 w-full transition-opacity duration-200"
+              style={{
+                background: meta.gradient,
+                opacity: isSelected ? 1 : 0.3,
+              }}
+            />
+
+            {/* 카드 본문 */}
+            <div className="flex flex-col gap-3 p-4 pt-3.5">
+              {/* 아이콘 */}
               <div
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
                 style={{
                   background: meta.gradient,
                   color: '#fff',
-                  boxShadow: `0 4px 12px color-mix(in srgb, ${meta.colorVar} 30%, transparent)`,
+                  boxShadow: `0 2px 6px color-mix(in srgb, ${meta.colorVar} 30%, transparent)`,
                 }}
               >
-                {meta.icon(20)}
+                {meta.icon(16)}
               </div>
-              <span
-                className="text-sm font-bold leading-tight"
-                style={{ color: isSelected ? meta.colorVar : 'var(--color-text-primary)' }}
-              >
-                {meta.label}
-              </span>
+
+              {/* 텍스트 */}
+              <div>
+                <p
+                  className="text-[13px] font-bold leading-tight"
+                  style={{ color: isSelected ? meta.colorVar : 'var(--color-text-primary)' }}
+                >
+                  {meta.label}
+                </p>
+                <p
+                  className="text-[11px] leading-relaxed mt-1 line-clamp-2"
+                  style={{ color: 'var(--color-text-muted)' }}
+                >
+                  {p.description}
+                </p>
+              </div>
             </div>
 
-            {/* 설명 */}
-            <p
-              className="text-xs leading-relaxed line-clamp-3"
-              style={{ color: 'var(--color-text-secondary)' }}
-            >
-              {p.description}
-            </p>
-
-            {/* 선택 dot */}
+            {/* 선택 체크 */}
             {isSelected && (
               <div
-                className="absolute top-3 right-3 h-2.5 w-2.5 rounded-full"
+                className="absolute top-3.5 right-3 flex h-[18px] w-[18px] items-center justify-center rounded-full"
                 style={{ background: meta.colorVar }}
-              />
+              >
+                <svg width="9" height="7" viewBox="0 0 10 8" fill="none">
+                  <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="2"
+                    strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
             )}
           </button>
         );
