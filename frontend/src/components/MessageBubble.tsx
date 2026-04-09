@@ -454,7 +454,7 @@ export default function MessageBubble({ entry, onViewArticle, onSend, onRetry }:
                 <button
                   key={i}
                   onClick={() => onSend?.(q)}
-                  className="flex items-start gap-2 w-full text-left text-xs rounded-md px-2 py-1.5 transition-colors hover:bg-blue-50"
+                  className="flex items-start gap-2 w-full text-left text-xs rounded-md px-2 py-1.5 transition-colors hover:bg-[#e8eef5]"
                   style={{ color: 'var(--color-text-secondary)' }}
                 >
                   <span className="shrink-0 font-bold" style={{ color: 'var(--color-primary)' }}>›</span>
@@ -476,7 +476,7 @@ export default function MessageBubble({ entry, onViewArticle, onSend, onRetry }:
                 key={c.num}
                 onClick={() => onViewArticle(c.lawName, c.articleId)}
                 disabled={false}
-                className="flex items-center gap-2 w-full text-left text-xs rounded-md px-1 py-0.5 transition-colors hover:bg-blue-50 disabled:opacity-40 disabled:cursor-default"
+                className="flex items-center gap-2 w-full text-left text-xs rounded-md px-1 py-0.5 transition-colors hover:bg-[#e8eef5] disabled:opacity-40 disabled:cursor-default"
               >
                 <span
                   className="shrink-0 font-bold tabular-nums"

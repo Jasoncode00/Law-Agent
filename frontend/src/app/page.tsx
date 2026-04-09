@@ -47,8 +47,8 @@ export default function HomePage() {
           <div
             className="relative flex h-24 w-24 items-center justify-center rounded-3xl shadow-2xl"
             style={{
-              background: 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)',
-              boxShadow: '0 12px 40px rgba(30, 64, 175, 0.3)',
+              background: 'linear-gradient(135deg, #0f2540 0%, #1a3a5c 100%)',
+              boxShadow: '0 12px 40px rgba(26, 58, 92, 0.35)',
             }}
           >
             {/* 저울 아이콘 위에 SK 날개 형태를 오마주한 포인트 추가 */}
@@ -76,7 +76,7 @@ export default function HomePage() {
               letterSpacing: '-0.02em'
             }}
           >
-            <span className="text-blue-700">Law Navigator</span>
+            <span style={{ color: 'var(--color-primary)' }}>Law Navigator</span>
           </h1>
           <p
             className="mt-2 text-base font-medium"
@@ -154,11 +154,11 @@ export default function HomePage() {
                 className="flex items-center gap-2 rounded-2xl px-10 py-3.5 text-sm font-bold transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
                 style={{
                   background: selected
-                    ? 'linear-gradient(135deg, #1e40af, #3b82f6)'
-                    : '#cbd5e1',
+                    ? 'linear-gradient(135deg, #1a3a5c, #2a5d87)'
+                    : '#cec9c0',
                   color: '#fff',
                   boxShadow: selected
-                    ? '0 6px 20px rgba(30, 64, 175, 0.35)'
+                    ? '0 6px 20px rgba(26, 58, 92, 0.35)'
                     : 'none',
                 }}
                 onMouseEnter={(e) => {

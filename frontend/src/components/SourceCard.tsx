@@ -67,7 +67,7 @@ export default function SourceCard({ source, onViewArticle }: Props) {
           {/* 전체보기 버튼 */}
           <button
             onClick={() => onViewArticle(source)}
-            className="flex items-center gap-1 px-2 py-0.5 rounded-md transition-colors hover:bg-blue-100"
+            className="flex items-center gap-1 px-2 py-0.5 rounded-md transition-colors hover:bg-[#e8eef5]"
             style={{ color: 'var(--color-primary)' }}
           >
             <ExternalLink size={11} />
@@ -97,7 +97,7 @@ export default function SourceCard({ source, onViewArticle }: Props) {
             <button
               key={article.id}
               onClick={() => onViewArticle(source, article.id)}
-              className="flex items-center gap-2 w-full text-left px-2 py-1.5 rounded-md transition-colors hover:bg-blue-50"
+              className="flex items-center gap-2 w-full text-left px-2 py-1.5 rounded-md transition-colors hover:bg-[#e8eef5]"
             >
               <span
                 className="font-bold shrink-0"

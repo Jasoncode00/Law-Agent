@@ -4,45 +4,39 @@
    디자인 토큰 - 여기서 색상/폰트/간격을 수정하세요
    ============================================================ */
 :root {
-  /* 브랜드 색상 */
-  --color-primary: #1e40af;
-  /* 메인 파란색 */
-  --color-primary-hover: #1d4ed8;
-  --color-primary-light: #dbeafe;
+  /* 브랜드 색상 — 로펌 딥 네이비 */
+  --color-primary: #1a3a5c;
+  --color-primary-hover: #152e4a;
+  --color-primary-light: #e8eef5;
 
-  /* 페르소나 색상 */
-  --color-general: #4f46e5;
-  --color-dev-sales: #15803d;
-  /* 개발/영업 - 초록색 계열 */
-  --color-design: #0369a1;
-  /* 설계/인허가 - 파란색 계열 */
-  --color-construction: #b45309;
-  /* 시공/안전 - 주황색 계열 */
-  --color-contract: #a16207;
-  /* 계약/원가 - 호박색 계열 */
-  --color-quality: #7c3aed;
-  /* 품질관리 - 보라색 계열 */
+  /* 페르소나 색상 — 뮤트 전문가 톤 */
+  --color-general: #1a3a5c;       /* 딥 네이비 */
+  --color-dev-sales: #2a5d3e;     /* 뮤트 포레스트 그린 */
+  --color-design: #1e4d70;        /* 스틸 블루 */
+  --color-construction: #4a3322;  /* 다크 시에나 */
+  --color-contract: #6b5520;      /* 뮤트 골드 브라운 */
+  --color-quality: #3a2a5c;       /* 다크 플럼 */
 
-  /* 배경 */
-  --color-bg: #f8fafc;
+  /* 배경 — 따뜻한 크림 */
+  --color-bg: #f7f6f3;
   --color-surface: #ffffff;
-  --color-border: #e2e8f0;
+  --color-border: #ddd8cf;
 
   /* 텍스트 */
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #64748b;
-  --color-text-muted: #94a3b8;
+  --color-text-primary: #1c1a18;
+  --color-text-secondary: #5c5650;
+  --color-text-muted: #8c877f;
 
   /* 채팅 말풍선 */
-  --color-bubble-user: #1e40af;
+  --color-bubble-user: #1a3a5c;
   --color-bubble-user-text: #ffffff;
   --color-bubble-assistant: #ffffff;
-  --color-bubble-assistant-text: #0f172a;
+  --color-bubble-assistant-text: #1c1a18;
 
   /* 도구 호출 배지 */
-  --color-tool-bg: #f0f9ff;
-  --color-tool-border: #bae6fd;
-  --color-tool-text: #0369a1;
+  --color-tool-bg: #eef2f7;
+  --color-tool-border: #c5d4e8;
+  --color-tool-text: #2a5280;
 
   /* 간격/크기 */
   --chat-max-width: 900px;
@@ -125,7 +119,7 @@ body {
 }
 
 .prose-law code {
-  background: #f1f5f9;
+  background: #f0ede6;
   border-radius: 4px;
   padding: 0.1em 0.4em;
   font-size: 0.875em;
@@ -146,7 +140,7 @@ body {
 }
 
 .prose-law th {
-  background: #f8fafc;
+  background: #f5f3ef;
   font-weight: 600;
 }
 
@@ -168,14 +162,14 @@ body {
   color: #ffffff !important;
 }
 
-/* Perplexity 스타일 인용 번호 */
+/* Perplexity 스타일 인용 번호 — 뮤트 골드 */
 .cite-num {
   display: inline;
   font-size: 0.65rem;
   font-weight: 700;
   font-style: normal;
-  color: var(--color-primary);
-  background: var(--color-primary-light);
+  color: #7c6420;
+  background: #f5eed8;
   border-radius: 3px;
   padding: 0 3px;
   margin-left: 1px;
@@ -187,7 +181,7 @@ body {
 }
 
 .cite-num:hover {
-  background: #bfdbfe;
+  background: #e8d9a0;
 }
 
 /* 법령 원문 포맷 (LawViewer) — 본문 답변과 동일 크기 (text-sm = 0.875rem) */
@@ -327,7 +321,7 @@ body {
 }
 
 .sidebar-icon-btn:hover {
-  background: #f1f5f9;
+  background: #edeae4;
   color: var(--color-text-primary);
 }
 

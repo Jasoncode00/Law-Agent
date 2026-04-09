@@ -25,37 +25,37 @@ export const PERSONA_ICONS: Record<PersonaId, { label: string; icon: (size: numb
     label: '종합 검색',
     icon: (s) => <SearchCode size={s} />,
     colorVar: 'var(--color-general)',
-    gradient: 'linear-gradient(135deg, #1e40af, #6366f1)',
+    gradient: 'linear-gradient(135deg, #0f2540, #1a3a5c)',
   },
   'dev-sales': {
     label: '개발/영업',
     icon: (s) => <Building2 size={s} />,
     colorVar: 'var(--color-dev-sales)',
-    gradient: 'linear-gradient(135deg, #059669, #10b981)',
+    gradient: 'linear-gradient(135deg, #1a3d2c, #2a5d3e)',
   },
   'design-permit': {
     label: '설계/인허가',
     icon: (s) => <PencilRuler size={s} />,
     colorVar: 'var(--color-design)',
-    gradient: 'linear-gradient(135deg, #0369a1, #38bdf8)',
+    gradient: 'linear-gradient(135deg, #142e47, #1e4d70)',
   },
   'construction-safety': {
     label: '시공/안전',
     icon: (s) => <HardHat size={s} />,
     colorVar: 'var(--color-construction)',
-    gradient: 'linear-gradient(135deg, #b45309, #f59e0b)',
+    gradient: 'linear-gradient(135deg, #2c1e14, #4a3322)',
   },
   'contract-cost': {
     label: '계약/원가',
     icon: (s) => <FileSignature size={s} />,
     colorVar: 'var(--color-contract)',
-    gradient: 'linear-gradient(135deg, #a16207, #eab308)',
+    gradient: 'linear-gradient(135deg, #3d3010, #6b5520)',
   },
   'quality-mgmt': {
     label: '품질관리',
     icon: (s) => <ClipboardCheck size={s} />,
     colorVar: 'var(--color-quality)',
-    gradient: 'linear-gradient(135deg, #7c3aed, #a78bfa)',
+    gradient: 'linear-gradient(135deg, #221433, #3a2a5c)',
   },
 };
 

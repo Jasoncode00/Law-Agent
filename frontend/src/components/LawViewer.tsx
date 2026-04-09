@@ -176,7 +176,7 @@ export default function LawViewer({ source, scrollToId, onClose }: Props) {
         {targetArticle && !showAll && hiddenCount > 0 && (
           <button
             onClick={() => setShowAll(true)}
-            className="w-full text-xs py-1.5 rounded-lg transition-colors hover:bg-blue-50"
+            className="w-full text-xs py-1.5 rounded-lg transition-colors hover:bg-[#e8eef5]"
             style={{ color: 'var(--color-primary)', border: '1px dashed var(--color-border)' }}
           >
             전체 조문 보기 (총 {source.articles.length}개)

@@ -51,7 +51,7 @@ export default function ChatInput({ onSend, onStop, isLoading, disabled }: Props
             <button
               key={q}
               onClick={() => { onSend(q); }}
-              className="rounded-full border px-3 py-1 text-xs transition-colors hover:bg-blue-50"
+              className="rounded-full border px-3 py-1 text-xs transition-colors hover:bg-[#e8eef5]"
               style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-secondary)' }}
             >
               {q}
