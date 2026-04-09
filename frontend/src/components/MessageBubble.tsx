@@ -2,10 +2,19 @@
 
 import { useEffect, useRef, useMemo, useState } from 'react';
 import { AlertCircle, Copy, Check, RotateCcw } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import { ChatEntry } from '@/hooks/useChat';
 import { LawSource } from '@/lib/types';
 import { parseLawSources, TEXT_TOOL_PRIORITY } from '@/lib/lawParser';
 import ToolBadge from './ToolBadge';
+
+/** LLM 응답 HTML을 안전하게 sanitize — cite 태그의 data-n 속성 보존 */
+function sanitize(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ['h2','h3','h4','p','strong','em','ul','ol','li','hr','br','cite','span','div','code','pre'],
+    ALLOWED_ATTR: ['class', 'data-n'],
+  });
+}
 
 interface Props {
   entry: ChatEntry;
@@ -404,7 +413,7 @@ export default function MessageBubble({ entry, onViewArticle, onSend, onRetry }:
             <div
               ref={contentRef}
               className="prose-law"
-              dangerouslySetInnerHTML={{ __html: finalHtml }}
+              dangerouslySetInnerHTML={{ __html: sanitize(finalHtml) }}
             />
           )}
         </div>

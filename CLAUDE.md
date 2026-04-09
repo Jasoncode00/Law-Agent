@@ -23,10 +23,10 @@ SKEP 건설회사 사내 법령 검색/해석 AI Agent. 사용자 페르소나( 
 - 대화 세션 관리 (localStorage 기반 히스토리)
 - 사이드바 (대화 목록, 접기/펼치기)
 
-### Phase 3 (예정) - 인증 + 배포
-- JWT 인증 (사내 사용자 접근 제어)
-- Docker + Docker Compose 컨테이너화
-- AWS ECS 또는 자체 서버 배포
+### Phase 3 (진행 중) - 인증 + 배포
+- JWT 인증 (사내 사용자 접근 제어) — 미완료
+- Docker + Docker Compose 컨테이너화 — **Dockerfile/docker-compose.yml 작성 완료**
+- GCP Cloud Run 또는 GCE VM 배포 예정
 
 ### 향후 (별도 요청 시) - RAG
 - ChromaDB + multilingual-e5-large 임베딩
@@ -44,7 +44,7 @@ SKEP 건설회사 사내 법령 검색/해석 AI Agent. 사용자 페르소나( 
 | MCP | mcp Python SDK 1.26+ | korean-law-mcp 서버 stdio 연결 |
 | Frontend | Next.js 16 + TypeScript | App Router |
 | UI | Tailwind CSS v4 | CSS 변수 기반 테마 |
-| 배포 | Docker + Docker Compose | Phase 3 예정 |
+| 배포 | Docker + Docker Compose | Dockerfile 완성, docker-compose.yml 포함 |
 
 ---
 
@@ -55,8 +55,11 @@ Law Agent/
 ├── CLAUDE.md                          ← 본 파일
 ├── .env                               ← API 키 및 환경 변수 (gitignore 필요)
 ├── .env.example                       ← 환경 변수 템플릿
+├── docker-compose.yml                 ← Backend + Frontend 통합 실행
 │
 ├── backend/
+│   ├── Dockerfile                     ← python:3.11-slim + Node.js 20 (MCP용)
+
 │   ├── pyproject.toml                 ← Python 의존성
 │   └── app/
 │       ├── main.py                    ← FastAPI 앱 + CORS + 라우터 등록
@@ -79,8 +82,9 @@ Law Agent/
 │           └── logger.py              ← 로깅 설정
 │
 └── frontend/
+    ├── Dockerfile                     ← 멀티스테이지 빌드 (builder + runner, node:20-slim)
     ├── package.json
-    ├── next.config.js
+    ├── next.config.ts
     └── src/
         ├── app/
         │   ├── layout.tsx
@@ -107,9 +111,48 @@ Law Agent/
 
 ---
 
-## 서버 실행 방법
+## Docker 배포
 
-### Backend
+### 빌드 및 실행
+
+```bash
+cd "d:/SKEC Files/Claude Code/Law Agent"
+
+# .env 파일이 루트에 있어야 함 (docker-compose env_file로 backend에 주입)
+docker-compose up --build
+```
+
+- Frontend: `http://localhost:3000`
+- Backend: `http://localhost:8000`
+
+### 외부 서버 배포 시
+
+IP 변경 없이 `BACKEND_URL` 환경변수만 수정 후 컨테이너 재시작:
+
+```yaml
+# docker-compose.yml — 기본값 그대로 사용 (Docker 내부 네트워크)
+frontend:
+  environment:
+    - BACKEND_URL=http://backend:8000   # Docker 네트워크 내부 서비스명으로 접근
+```
+
+브라우저에서는 서버 IP:3000에 접속하면 되고, `/api/*` 요청은 Next.js가 자동으로 backend 컨테이너로 중계한다. 재빌드 불필요.
+
+### 아키텍처 — API 프록시 방식
+
+브라우저가 직접 backend URL을 알 필요가 없다. 모든 API 호출은 상대경로(`/api/*`)로 하며, Next.js 서버가 내부적으로 backend로 중계한다.
+
+```
+브라우저 → /api/chat → Next.js(:3000) → http://backend:8000/api/chat
+```
+
+`next.config.ts`의 `rewrites()`가 프록시 역할을 수행. `BACKEND_URL` 환경변수(서버사이드)로 대상 주소를 제어하므로 IP가 바뀌어도 재빌드 없이 컨테이너 재시작만으로 적용된다.
+
+---
+
+## 서버 실행 방법 (로컬 개발)
+
+### Backend (로컬)
 
 ```bash
 cd "d:/SKEC Files/Claude Code/Law Agent/backend"
@@ -119,7 +162,7 @@ uvicorn app.main:app --reload --port 8000
 
 Swagger UI: `http://localhost:8000/docs`
 
-### Frontend
+### Frontend (로컬)
 
 ```bash
 cd "d:/SKEC Files/Claude Code/Law Agent/frontend"

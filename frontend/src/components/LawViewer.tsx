@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { X, ChevronDown, ChevronUp, BookOpen, Loader2 } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import { LawSource } from '@/lib/types';
 
 interface Props {
@@ -238,7 +239,10 @@ export default function LawViewer({ source, scrollToId, onClose }: Props) {
                 <div
                   className="law-content px-3 pb-3 pt-2 border-t"
                   style={{ borderColor: 'var(--color-border)' }}
-                  dangerouslySetInnerHTML={{ __html: formatLawText(article.content) }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatLawText(article.content), {
+                    ALLOWED_TAGS: ['div'],
+                    ALLOWED_ATTR: ['class'],
+                  }) }}
                 />
               )}
             </div>

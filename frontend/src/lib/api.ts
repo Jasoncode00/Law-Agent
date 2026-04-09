@@ -1,6 +1,8 @@
 import { Persona, PersonaId, SSEEventType, SSEPayload } from './types';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+// 브라우저는 항상 상대경로(/api/*)로 호출 → Next.js 서버가 backend로 프록시
+// Docker: BACKEND_URL=http://backend:8000 / 로컬: http://localhost:8000 (next.config.ts rewrites)
+const API_BASE = '';
 
 export interface ArticleResult {
   lawName: string;

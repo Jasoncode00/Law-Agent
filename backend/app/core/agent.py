@@ -1,3 +1,4 @@
+import re
 import json
 from typing import List, Dict, Any, AsyncGenerator
 from .llm_provider import get_llm_provider
@@ -7,6 +8,27 @@ from .streaming import create_event
 from ..utils.llm_utils import convert_mcp_tools
 from ..config import settings
 from ..utils.logger import logger
+
+# ── PII 비식별화 패턴 ──────────────────────────────────────────────────────────
+# 사용자 입력에서 개인정보로 의심되는 패턴을 마스킹하여 LLM으로 전송
+_PII_PATTERNS: list[tuple[re.Pattern, str]] = [
+    # 주민등록번호 (6자리-7자리)
+    (re.compile(r'\b\d{6}-\d{7}\b'), '[주민번호]'),
+    # 전화번호 (010-xxxx-xxxx, 02-xxx-xxxx 등)
+    (re.compile(r'\b0\d{1,2}[-.\s]?\d{3,4}[-.\s]?\d{4}\b'), '[전화번호]'),
+    # 이메일
+    (re.compile(r'\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b'), '[이메일]'),
+    # 사업자등록번호 (xxx-xx-xxxxx)
+    (re.compile(r'\b\d{3}-\d{2}-\d{5}\b'), '[사업자번호]'),
+    # 계좌번호 패턴 (숫자-숫자-숫자, 10자리 이상 연속 숫자)
+    (re.compile(r'\b\d{10,20}\b'), '[계좌번호]'),
+]
+
+def _redact_pii(text: str) -> str:
+    """개인정보로 의심되는 패턴을 마스킹 토큰으로 대체한다."""
+    for pattern, placeholder in _PII_PATTERNS:
+        text = pattern.sub(placeholder, text)
+    return text
 
 class LawAgent:
     """Orchestrator for Law Agent chat with MCP tools"""
@@ -29,7 +51,12 @@ class LawAgent:
             yield create_event("error", {"message": "법령 검색 도구를 불러오는 데 실패했습니다."})
             return
 
-        messages = history + [{"role": "user", "content": message}]
+        # PII 마스킹 — 개인정보가 LLM(외부 클라우드)으로 전송되지 않도록 사전 처리
+        redacted_message = _redact_pii(message)
+        if redacted_message != message:
+            logger.info("PII detected and redacted in user message")
+
+        messages = history + [{"role": "user", "content": redacted_message}]
         
         # Max loops to prevent infinite tool calling
         max_loops = 10
