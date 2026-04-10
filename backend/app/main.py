@@ -30,8 +30,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="SKEC Law Agent API",
-    description="Backend for SKEC Law Agent with MCP integration",
+    title="SKEP Law Agent API",
+    description="Backend for SKEP Law Agent with MCP integration",
     version="0.1.0",
     lifespan=lifespan,
     docs_url=None,    # Swagger UI 비활성화 — 프로덕션 API 구조 노출 방지

@@ -1,5 +1,15 @@
 venv/
+.venv/
 __pycache__/
+**/__pycache__/
 *.pyc
+*.pyo
+*.egg-info/
 .git/
+.gitignore
+# API 키 포함 — 절대 이미지에 포함되지 않도록
 .env
+.env.*
+# 로그
+logs/
+*.log

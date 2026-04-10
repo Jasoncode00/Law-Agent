@@ -2,4 +2,10 @@ node_modules/
 .next/
 out/
 .git/
+.gitignore
+# 환경 변수 파일 — 이미지에 포함되지 않도록
+.env
+.env.*
 .env.local
+.env.development
+.env.production

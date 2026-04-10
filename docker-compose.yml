@@ -9,11 +9,18 @@ services:
       - "8000"
     env_file: .env
     environment:
-      # Next.js(frontend)만 backend에 접근 가능하도록 CORS 제한
+      # frontend 컨테이너(Next.js)만 backend에 접근 가능하도록 CORS 제한
+      # 외부 서버 배포 시: 실제 서버 주소로 변경 (예: http://192.168.1.100:3000)
       - ALLOWED_ORIGINS=http://localhost:3000
     restart: always
     networks:
       - law-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
 
   frontend:
     build:
@@ -22,12 +29,19 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy   # backend 헬스체크 통과 후에만 frontend 시작
     environment:
       - BACKEND_URL=http://backend:8000
     restart: always
     networks:
       - law-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
 networks:
   law-network:
